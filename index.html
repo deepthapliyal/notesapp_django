@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CRUD App</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>CRUD App</h1>
+    
+    <h2>Items</h2>
+    <ul id="item-list"></ul>
+
+    <h2>Create Item</h2>
+    <form id="create-form">
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="text" id="description" placeholder="Description" required>
+        <button type="submit">Create</button>
+    </form>
+
+    <script>
+        const url = 'http://127.0.0.1:8000'
+        $(document).ready(function() {
+            
+            // Fetch all items on page load
+            $.ajax({
+                url: `${url}/api/items/`,
+                type: 'GET',
+                success: function(response) {
+                    var items = response;
+                    var itemList = $('#item-list');
+                    itemList.empty();
+                    $.each(items, function(index, item) {
+                        itemList.append('<li>' + item.name + ' - ' + item.description + ' <button onclick="editItem(' + item.id + ')">Edit</button> <button onclick="deleteItem(' + item.id + ')">Delete</button></li>');
+                    });
+                }
+            });
+
+            // Create item
+            $('#create-form').submit(function(event) {
+                event.preventDefault();
+                var name = $('#name').val();
+                var description = $('#description').val();
+                $.ajax({
+                    url: `${url}/api/items/create/`,
+                    type: 'POST',
+                    data: { 'name': name, 'description': description },
+                    success: function(response) {
+                        alert(response.message);
+                        location.reload();
+                    }
+                });
+            });
+        });
+
+        // Edit item
+        function editItem(itemId) {
+            var newName = prompt('Enter a new name:');
+            var newDescription = prompt('Enter a new description:');
+            $.ajax({
+                url: `${url}/api/items/update/` + itemId + '/',
+                type: 'POST',
+                data: { 'name': newName, 'description': newDescription },
+                success: function(response) {
+                    alert(response.message);
+                    location.reload();
+                }
+            });
+        }
+
+        // Delete item
+        function deleteItem(itemId) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                $.ajax({
+                    url: `${url}/api/items/delete/` + itemId + '/',
+                    type: 'POST',
+                    success: function(response) {
+                        alert(response.message);
+                        location.reload();
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
